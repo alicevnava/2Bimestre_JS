@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<body>
+<div id="demo">
+    <h1>Consulta de CEP</h1>
+    <input type="text" name="cep" id="cep" placeholder="Digite seu CEP" required>
+    <br>
+    <button type="button" onclick="loadDoc()">Pesquisar CEP com AJAX</button><br>
+    <button type="button" id="btnFetch">Pesquisar CEP com Fetch</button><br>
+    <button type="button" id="btnAsync">Pesquisar CEP com Async/Await</button>
+    <br>
+    <input type="text" id="logradouro" placeholder="Logradouro" readonly>
+    <br>
+    <input type="text" id="complemento" placeholder="Complemento" readonly>
+    <br>
+    <input type="text" id="bairro" placeholder="Bairro" readonly>
+    <br>
+    <input type="text" id="localidade" placeholder="Cidade" readonly>
+    <br>
+    <input type="text" id="uf" placeholder="UF" readonly>   
+</div>
+
+<script>
+    // AJAX 
+    function loadDoc() {
+        let cep = document.getElementById("cep").value.replace(/\D/g, ''); 
+
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                let endereco = JSON.parse(this.responseText);
+                preencherCampos(endereco);
+            }
+        };
+        xhttp.open("GET", "https://viacep.com.br/ws/" + cep + "/json/", true);
+        xhttp.send();
+    }
+
+    // Campos do formulário
+    function preencherCampos(endereco) {
+        document.getElementById("logradouro").value = endereco.logradouro || '';
+        document.getElementById("complemento").value = endereco.complemento || '';
+        document.getElementById("bairro").value = endereco.bairro || '';
+        document.getElementById("localidade").value = endereco.localidade || '';
+        document.getElementById("uf").value = endereco.uf || '';
+    }
+
+    // Fetch API
+    document.getElementById("btnFetch").addEventListener("click", function() {
+        let cep = document.getElementById("cep").value.replace(/\D/g, '');
+
+        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Erro ao consultar o CEP.");
+                }
+                return response.json();
+            })
+            .then(data => preencherCampos(data))
+            .catch(error => alert(error.message));
+    });
+
+    // Async/Await
+    document.getElementById("btnAsync").addEventListener("click", async function() {
+        let cep = document.getElementById("cep").value.replace(/\D/g, '');
+
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            if (!response.ok) {
+                throw new Error("Erro ao consultar o CEP.");
+            }
+            const data = await response.json();
+            preencherCampos(data);
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+</script>
+
+</body>
+</html>
